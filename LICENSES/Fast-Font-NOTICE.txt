@@ -1,0 +1,30 @@
+Fast-Font — Notice of upstream terms
+====================================
+
+The Fast-Font project (Born2Root/Fast-Font) does not publish a formal
+LICENSE file. The project's README states:
+
+  "The project is completely open-source, so please feel free to use
+  and distribute it however you want."
+
+  "The fonts stored in this repository are provided free of charge.
+  If you like the project, we would appreciate your support."
+
+Upstream source:  https://github.com/Born2Root/Fast-Font
+
+Fonts in this repository derived from Fast-Font:
+  - Fast_Sans.ttf
+  - Fast_Sans_Dotted.ttf
+  - Fast_Serif.ttf
+  - Fast_Mono.ttf
+  - Fast_OpenDyslexic.ttf  (built on the OpenDyslexic typeface — see
+                            OpenDyslexic-OFL.txt for the base typeface
+                            license)
+
+If you reuse these font files, please credit the Fast-Font project
+and (where applicable) the original typefaces the Fast-Font variants
+were built on.
+
+This NOTICE file does not grant rights beyond what the upstream
+maintainers have stated. If you need a formal license for commercial
+or redistribution purposes, contact the Fast-Font maintainers directly.
