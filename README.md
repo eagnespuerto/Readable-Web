@@ -54,5 +54,8 @@ icons/           Toolbar icons
 
 ## Licenses
 
-- **Fast-Font** — open source (https://github.com/Born2Root/Fast-Font)
-- **Atkinson Hyperlegible** — SIL Open Font License 1.1 (Braille Institute)
+Bundled font licenses and notices live in [`LICENSES/`](LICENSES/):
+
+- **Atkinson Hyperlegible** — SIL Open Font License 1.1 (Braille Institute) — see `LICENSES/Atkinson-Hyperlegible-OFL.txt`
+- **OpenDyslexic** (base for Fast_OpenDyslexic) — SIL Open Font License 1.1 — see `LICENSES/OpenDyslexic-OFL.txt`
+- **Fast-Font** — no formal license file upstream; see `LICENSES/Fast-Font-NOTICE.txt`
