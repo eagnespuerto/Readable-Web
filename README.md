@@ -22,7 +22,9 @@ A Chrome / Edge extension (Manifest V3) that overrides body text on every site w
 - Settings live in `chrome.storage.sync`, so they apply across all signed-in browsers.
 
 ## Install
+Web Store Link: https://chromewebstore.google.com/detail/aihpbccedbdfbdkcflhlochhngapnclh?utm_source=item-share-cb
 
+For manual install: 
 1. Unzip somewhere permanent.
 2. **Chrome:** open `chrome://extensions`, enable *Developer mode*, click *Load unpacked*, select this folder.
    **Edge:** open `edge://extensions`, enable *Developer mode*, click *Load unpacked*, select this folder.
