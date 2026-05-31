@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Readable Web",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Override body text fonts (Fast-Font, OpenDyslexic, Atkinson Hyperlegible) and scale font size. Headings are preserved.",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": ["<all_urls>"],
