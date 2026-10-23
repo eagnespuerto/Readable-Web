@@ -20,7 +20,6 @@ const FONTS = {
   }
 };
 
-const STYLE_ID = "readable-web-style";
 
 // Latin + common punctuation/symbols/currency only. Everything else falls
 // through to the element's preserved original font.
@@ -45,41 +44,55 @@ const DEFAULTS = {
 
 let observer = null;
 
-function buildFontFaceCSS() {
-  let css = "";
-  for (const def of Object.values(FONTS)) {
-    for (const face of def.faces) {
-      const url = chrome.runtime.getURL("fonts/" + face.file);
-      css += `@font-face {
-  font-family: "${def.family}";
-  src: url("${url}") format("truetype");
-  font-display: swap;
-  font-weight: ${face.weight};
-  font-style: ${face.style};
-  unicode-range: ${LATIN_RANGE};
-}
-`;
-    }
-  }
-  return css;
+// Fonts are registered with the FontFace API from bytes fetched out of the
+// extension package. A <style> with @font-face would be blocked on sites whose
+// Content-Security-Policy restricts style-src / font-src (GitHub, many banks,
+// Google properties), which made the font silently fall back to the site's own.
+const loadedFamilies = new Map(); // family -> Promise
+
+function loadFamily(def) {
+  if (loadedFamilies.has(def.family)) return loadedFamilies.get(def.family);
+  const p = Promise.all(def.faces.map(async (face) => {
+    const res = await fetch(chrome.runtime.getURL("fonts/" + face.file));
+    const buf = await res.arrayBuffer();
+    const ff = new FontFace(def.family, buf, {
+      weight: face.weight,
+      style: face.style,
+      display: "swap",
+      unicodeRange: LATIN_RANGE
+    });
+    await ff.load();
+    document.fonts.add(ff);
+  })).catch((err) => {
+    loadedFamilies.delete(def.family); // allow a retry on the next apply
+    console.warn("[Readable Web] could not load font", def.family, err);
+  });
+  loadedFamilies.set(def.family, p);
+  return p;
 }
 
-function buildSizeCSS({ sizePercent }) {
-  if (sizePercent && sizePercent !== 100) {
-    const scale = (sizePercent / 100).toFixed(4);
-    return `html { font-size: calc(100% * ${scale}) !important; }\n`;
-  }
-  return "";
-}
+// Font size is set as an inline style on <html> (CSSOM, not blocked by CSP).
+const SIZE_ATTR  = "data-rw-size";
+const SIZE_IL    = "data-rw-size-il";
+const SIZE_ILP   = "data-rw-size-ilp";
 
-function injectStyle(css) {
-  let el = document.getElementById(STYLE_ID);
-  if (!el) {
-    el = document.createElement("style");
-    el.id = STYLE_ID;
-    (document.head || document.documentElement).appendChild(el);
+function applySize(sizePercent, active) {
+  const root = document.documentElement;
+  if (root.hasAttribute(SIZE_ATTR)) {
+    const il = root.getAttribute(SIZE_IL) || "";
+    const ilp = root.getAttribute(SIZE_ILP) || "";
+    if (il) root.style.setProperty("font-size", il, ilp);
+    else    root.style.removeProperty("font-size");
+    root.removeAttribute(SIZE_ATTR);
+    root.removeAttribute(SIZE_IL);
+    root.removeAttribute(SIZE_ILP);
   }
-  el.textContent = css;
+  if (!active || !sizePercent || sizePercent === 100) return;
+  root.setAttribute(SIZE_IL, root.style.getPropertyValue("font-size"));
+  root.setAttribute(SIZE_ILP, root.style.getPropertyPriority("font-size"));
+  root.setAttribute(SIZE_ATTR, String(sizePercent));
+  const scale = (sizePercent / 100).toFixed(4);
+  root.style.setProperty("font-size", `calc(100% * ${scale})`, "important");
 }
 
 function isSiteDisabled(settings) {
@@ -97,12 +110,15 @@ function applyFont(el, family) {
   // Capture the original stack ONCE so re-applies and switches stay clean.
   let base = el.getAttribute(BASE_ATTR);
   if (base === null) {
-    base = getComputedStyle(el).fontFamily || "";
+    // Drop our own families inherited from an already-styled parent.
+    base = (getComputedStyle(el).fontFamily || "")
+      .split(",").map((s) => s.trim())
+      .filter((s) => s && !/^["']?RW /.test(s)).join(", ");
     el.setAttribute(BASE_ATTR, base);
     el.setAttribute(IL_ATTR, el.style.getPropertyValue("font-family"));
     el.setAttribute(ILP_ATTR, el.style.getPropertyPriority("font-family"));
   }
-  el.style.setProperty("font-family", `"${family}", ${base}`, "important");
+  el.style.setProperty("font-family", base ? `"${family}", ${base}` : `"${family}"`, "important");
   el.setAttribute(APPLIED, family);
 }
 
@@ -134,15 +150,20 @@ function walk(root, def, overrideHeadings) {
 }
 
 function applySettings(settings) {
-  injectStyle(buildFontFaceCSS() + buildSizeCSS(settings));
-
   if (observer) { observer.disconnect(); observer = null; }
   revertAll();
 
   const { enabled, fontKey, overrideHeadings } = settings;
-  if (!enabled || fontKey === "default" || isSiteDisabled(settings)) return;
+  const siteOn = !isSiteDisabled(settings);
+  // Size scaling keeps its old behaviour (independent of the font toggle),
+  // but now also switches off on sites the user disabled, as the README says.
+  applySize(settings.sizePercent, siteOn);
+
+  if (!enabled || !siteOn || fontKey === "default") return;
   const def = FONTS[fontKey];
   if (!def) return;
+  loadFamily(def);
+  loadFamily(FONTS.fast_mono);
 
   const run = () => {
     walk(document.documentElement, def, overrideHeadings);
