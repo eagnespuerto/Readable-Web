@@ -30,27 +30,34 @@ A Chrome / Edge extension (Manifest V3) that overrides body text on every site w
 
 ## How it works
 
-`content.js` runs at `document_start` and injects a single `<style>` element containing:
+`content.js` runs at `document_start` in every frame:
 
-1. `@font-face` declarations pointing at the bundled font files via `chrome.runtime.getURL`. Atkinson registers four faces (regular/bold/italic/bold-italic) so italics and bold text on the page still render correctly.
-2. A universal-selector override:
-   - Default: `:root :not(h1):not(h2)...` so headings keep their original cascade.
-   - With "override headings" on: `:root *`.
-   `!important` is used to beat site-level rules.
-3. Font-size scaling via `html { font-size: calc(100% * <scale>) !important }`. Because most sites use `rem`/`em`, this cascades naturally instead of breaking layouts the way a forced `body { font-size: Xpx }` would.
-4. A separate rule keeping `pre`/`code`/`kbd`/`samp`/`tt`/`var` in monospace (Fast Mono).
+1. **Fonts** are registered with the `FontFace` API from bytes fetched out of the extension package. This works even on sites with a strict Content-Security-Policy (GitHub, Google, banks), where an injected `<style>`/`@font-face` would be blocked. Only the selected font (plus Fast Mono for code) is loaded. Each face uses a Latin-only `unicode-range`, so other scripts and icon glyphs fall back to the page's own font.
+2. **Body text**: each element gets an inline `font-family: "<font>", <its original stack> !important`. Headings (`h1`–`h6`) are skipped unless "Also override headings" is on. `pre`/`code`/`kbd`/`samp`/`tt`/`var` use Fast Mono. A `MutationObserver` styles content added later.
+3. **Font size**: `font-size: calc(100% * <scale>) !important` is set inline on `<html>`. Most sites use `rem`/`em`, so this scales naturally.
 
-Per-site disable works by storing a list of hostnames in `chrome.storage.sync.disabledSites`. When the page's `location.hostname` is in that list, only `@font-face` declarations are injected — no overrides — so the extension is effectively dormant on that site.
+Per-site disable stores hostnames in `chrome.storage.sync.disabledSites`. On those sites nothing is changed.
+
+## Permissions
+
+- `storage`: saves your settings.
+- Host access to all sites: needed to restyle text on the pages you visit.
 
 ## Files
 
 ```
 manifest.json    MV3 manifest (Chrome + Edge)
-content.js       Injects @font-face + override CSS into every page
+content.js       Loads fonts and applies the overrides on every page
 popup.html/.js   Toolbar UI
 fonts/           Bundled font files
 icons/           Toolbar icons
 ```
+
+## Support
+
+If Readable Web is useful to you, you can support its development with the
+**Buy me a Ko-fi** link in the popup, or directly at
+<https://ko-fi.com/eagnespuerto>. Entirely optional and always appreciated.
 
 ## Licenses
 
