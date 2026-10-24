@@ -1,5 +1,13 @@
 # Readable Web
 
+[![license](https://img.shields.io/badge/license-CC0-blue)](LICENSE)
+[![release](https://img.shields.io/github/v/release/eagnespuerto/Readable-Web?include_prereleases&sort=semver)](https://github.com/eagnespuerto/Readable-Web/releases/latest)
+[![made with](https://img.shields.io/badge/made%20with-JavaScript-F7DF1E?logo=javascript&logoColor=white)](https://github.com/eagnespuerto/Readable-Web)
+[![Chrome](https://img.shields.io/badge/Chrome-extension-4285F4?logo=googlechrome&logoColor=white)](https://github.com/eagnespuerto/Readable-Web/releases/latest)
+[![Edge](https://img.shields.io/badge/Edge-extension-0078D7)](https://github.com/eagnespuerto/Readable-Web/releases/latest)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support%20me-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/eagnespuerto)
+[![Linktree](https://img.shields.io/badge/Linktree-soitsagnes-43E55E?logo=linktree&logoColor=white)](https://linktr.ee/soitsagnes)
+
 A Chrome / Edge extension (Manifest V3) that overrides body text on every site with a more readable font, and scales font size as a percentage.
 
 ## Fonts included
